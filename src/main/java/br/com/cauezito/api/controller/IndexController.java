@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.cauezito.api.model.Person;
@@ -58,7 +57,6 @@ public class IndexController {
 		person.getPhones().forEach(t -> t.setPerson(person));
 		Person userAux = personRepository.save(person);
 		return new ResponseEntity<Person>(userAux, HttpStatus.OK);
-
 	}
 	
 	//DELETE
