@@ -26,6 +26,7 @@ public class IndexController {
 	@Autowired
 	private PersonRepository personRepository;
 
+	//GET
 	@GetMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<Person> init(@PathVariable(value = "id") Long id) {
 		Optional<Person> user = personRepository.findById(id);
@@ -38,20 +39,29 @@ public class IndexController {
 		List<Person> users = (List<Person>) personRepository.findAll();
 		return new ResponseEntity<List<Person>>(users, HttpStatus.OK);
 	}
+	
+	//POST
 
 	@PostMapping(value = "/", produces = "application/json")
-	public ResponseEntity<Person> register(@RequestBody Person user) {
-		Person userAux = personRepository.save(user);
+	public ResponseEntity<Person> register(@RequestBody Person person) {
+		person.getPhones().forEach(t -> t.setPerson(person));
+
+		Person userAux = personRepository.save(person);	
 		return new ResponseEntity<Person>(userAux, HttpStatus.OK);
 	}
 
+	//PUT
+	
 	@PutMapping(value = "/{id}", produces = "application/json")
-	public ResponseEntity<Person> update(@RequestBody Person user, @PathVariable(value = "id") Long id) {
-		user.setId(id);
-		Person userAux = personRepository.save(user);
+	public ResponseEntity<Person> update(@RequestBody Person person, @PathVariable(value = "id") Long id) {
+		person.setId(id);
+		person.getPhones().forEach(t -> t.setPerson(person));
+		Person userAux = personRepository.save(person);
 		return new ResponseEntity<Person>(userAux, HttpStatus.OK);
 
 	}
+	
+	//DELETE
 
 	@DeleteMapping(value = "/{id}", produces = "application/text")
 	public String delete(@PathVariable(value = "id") Long id) {
