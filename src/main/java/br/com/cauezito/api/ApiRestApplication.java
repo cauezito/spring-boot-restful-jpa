@@ -21,16 +21,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebMvc
 @RestController
 @EnableAutoConfiguration
-public class ApiRestApplication extends SpringBootServletInitializer  implements WebMvcConfigurer{
+public class ApiRestApplication extends SpringBootServletInitializer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ApiRestApplication.class, args);
 	}
-	
-	@Override
-	public void addCorsMappings(CorsRegistry registry) {
-		//dento desse mapeamento só libera os métodos e servidores epecíficos
-		registry.addMapping("*").allowedMethods("POST", "PUT","GET", "DELETE").allowedOrigins("http://rest-api-study.herokuapp.com");		
-	}
+
 
 }
