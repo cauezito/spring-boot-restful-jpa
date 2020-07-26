@@ -30,7 +30,7 @@ public class ApiRestApplication extends SpringBootServletInitializer  implements
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		//dento desse mapeamento só libera os métodos e servidores epecíficos
-	//	registry.addMapping("/user/**").allowedMethods("POST", "PUT",).allowedOrigins("http://google.com.br");		
+		registry.addMapping("*").allowedMethods("POST", "PUT","GET", "DELETE").allowedOrigins("http://rest-api-study.herokuapp.com");		
 	}
 
 }
