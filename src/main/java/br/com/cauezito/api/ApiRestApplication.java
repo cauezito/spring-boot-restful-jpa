@@ -9,7 +9,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
 @EntityScan(basePackages = {"br.com.cauezito.api.model"}) 
@@ -19,10 +21,16 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @EnableWebMvc
 @RestController
 @EnableAutoConfiguration
-public class ApiRestApplication extends SpringBootServletInitializer  {
+public class ApiRestApplication extends SpringBootServletInitializer  implements WebMvcConfigurer{
 
 	public static void main(String[] args) {
 		SpringApplication.run(ApiRestApplication.class, args);
+	}
+	
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+		//dento desse mapeamento só libera os métodos e servidores epecíficos
+	//	registry.addMapping("/user/**").allowedMethods("POST", "PUT",).allowedOrigins("http://google.com.br");		
 	}
 
 }
