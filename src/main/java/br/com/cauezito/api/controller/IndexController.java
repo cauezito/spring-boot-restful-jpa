@@ -19,23 +19,25 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.cauezito.api.model.Person;
 import br.com.cauezito.api.repository.PersonRepository;
 
-@CrossOrigin//default = qualquer sistema poderá requisitar
+
+@CrossOrigin
 @RestController
 @RequestMapping(value = "/user")
+
 public class IndexController {
 
 	@Autowired
 	private PersonRepository personRepository;
 
 	//GET
+
 	@GetMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<Person> init(@PathVariable(value = "id") Long id) {
 		Optional<Person> user = personRepository.findById(id);
 
 		return new ResponseEntity<Person>(user.get(), HttpStatus.OK);
 	}
-
-	@GetMapping(value = "/", produces = "application/json")
+ 	@GetMapping(value = "/", produces = "application/json")
 	public ResponseEntity<List<Person>> allUsers() {
 		List<Person> users = (List<Person>) personRepository.findAll();
 		return new ResponseEntity<List<Person>>(users, HttpStatus.OK);
@@ -52,7 +54,7 @@ public class IndexController {
 	}
 
 	//PUT
-	
+
 	@PutMapping(value = "/{id}", produces = "application/json")
 	public ResponseEntity<Person> update(@RequestBody Person person, @PathVariable(value = "id") Long id) {
 		person.setId(id);
@@ -65,7 +67,6 @@ public class IndexController {
 
 	@DeleteMapping(value = "/{id}", produces = "application/text")
 	public String delete(@PathVariable(value = "id") Long id) {
-
 		personRepository.deleteById(id);
 		return "ok";
 	}

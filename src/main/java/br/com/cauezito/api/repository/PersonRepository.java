@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 import br.com.cauezito.api.model.Person;
 
 @Repository
-
 public interface PersonRepository extends CrudRepository<Person, Long> {
 
 	

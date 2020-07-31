@@ -1,19 +1,28 @@
 package br.com.cauezito.api.model;
 
-import java.io.Serializable;
-import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.ConstraintMode;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
+import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
+import javax.persistence.UniqueConstraint;
+
+import org.hibernate.annotations.ForeignKey;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
-public class Person implements Serializable {
+public class Person implements UserDetails {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -21,11 +30,22 @@ public class Person implements Serializable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	private String login;
-	private String password;
+	private String pass;
 	private String name;
 	private String surname;
 	
-	@OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "user_roles", uniqueConstraints = @UniqueConstraint (
+			columnNames = {"person_id", "role_id"}, name = "unique_role"
+			), joinColumns = @JoinColumn(name = "person_id", referencedColumnName = "id", 
+			table = "person", unique = false,  foreignKey = @javax.persistence.ForeignKey(name="person_fk", 
+			value = ConstraintMode.CONSTRAINT)), 	inverseJoinColumns = @JoinColumn(name="role_id",
+			referencedColumnName = "id", table = "role", unique=false, updatable = false, foreignKey =
+			@javax.persistence.ForeignKey(name="role_fk", 	value = ConstraintMode.CONSTRAINT)))
+	
+	private List<Role> roles;
+	
+	@OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Telephone> phones = new ArrayList<Telephone>();
 	
 	
@@ -41,11 +61,11 @@ public class Person implements Serializable {
 	public void setLogin(String login) {
 		this.login = login;
 	}
-	public String getPassword() {
-		return password;
+	public String getPass() {
+		return this.pass;
 	}
-	public void setPassword(String password) {
-		this.password = password;
+	public void setPass(String password) {
+		this.pass = password;
 	}
 	public String getName() {
 		return name;
@@ -87,6 +107,34 @@ public class Person implements Serializable {
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
+	}
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		return roles;
+	}
+	@Override
+	public String getUsername() {
+		return this.login;
+	}
+	@Override
+	public boolean isAccountNonExpired() {
+		return true;
+	}
+	@Override
+	public boolean isAccountNonLocked() {
+		return true;
+	}
+	@Override
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
+	@Override
+	public boolean isEnabled() {
+		return true;
+	}
+	@Override
+	public String getPassword() {
+		return this.pass;
 	}
 	
 }
