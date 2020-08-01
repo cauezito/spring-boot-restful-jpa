@@ -57,7 +57,6 @@ public class JWTTokenAuthService {
 				if (person != null) {
 					return new UsernamePasswordAuthenticationToken(person.getLogin(), 
 							person.getPass(), person.getAuthorities());
-
 				}
 			}
 		}
