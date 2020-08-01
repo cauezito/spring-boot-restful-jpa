@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +41,9 @@ public class IndexController {
 
 		return new ResponseEntity<Person>(user.get(), HttpStatus.OK);
 	}
-	@Cacheable("cache_people")
+	
+	@CacheEvict(value = "people", allEntries = true)
+	@CachePut(value="people")
  	@GetMapping(value = "/", produces = "application/json")
 	public ResponseEntity<List<Person>> allUsers() {
 		List<Person> users = (List<Person>) personRepository.findAll();
