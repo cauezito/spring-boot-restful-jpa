@@ -38,6 +38,7 @@ public class IndexController {
 
 		return new ResponseEntity<Person>(user.get(), HttpStatus.OK);
 	}
+	
  	@GetMapping(value = "/", produces = "application/json")
 	public ResponseEntity<List<Person>> allUsers() {
 		List<Person> users = (List<Person>) personRepository.findAll();
@@ -62,6 +63,13 @@ public class IndexController {
 	public ResponseEntity<Person> update(@RequestBody Person person, @PathVariable(value = "id") Long id) {
 		person.setId(id);
 		person.getPhones().forEach(t -> t.setPerson(person));
+		Person aux = personRepository.findPersonByLogin(person.getLogin());
+		
+		if(!aux.getPass().equals(person.getPass())) {
+			String password = new BCryptPasswordEncoder().encode(person.getPass());
+			person.setPass(password);
+		}
+		
 		Person userAux = personRepository.save(person);
 		return new ResponseEntity<Person>(userAux, HttpStatus.OK);
 	}
