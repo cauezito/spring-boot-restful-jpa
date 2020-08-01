@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,7 +49,9 @@ public class IndexController {
 	@PostMapping(value = "/", produces = "application/json")
 	public ResponseEntity<Person> register(@RequestBody Person person) {
 		person.getPhones().forEach(t -> t.setPerson(person));
-
+		String password = new BCryptPasswordEncoder().encode(person.getPass());
+		person.setPass(password);
+		person.getPhones().forEach(t -> t.setPerson(person));
 		Person userAux = personRepository.save(person);	
 		return new ResponseEntity<Person>(userAux, HttpStatus.OK);
 	}

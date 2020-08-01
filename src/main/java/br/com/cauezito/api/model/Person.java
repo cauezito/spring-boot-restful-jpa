@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.ConstraintMode;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -21,6 +22,8 @@ import org.hibernate.annotations.ForeignKey;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class Person implements UserDetails {
 	
@@ -29,6 +32,7 @@ public class Person implements UserDetails {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
+	@Column(unique = true)
 	private String login;
 	private String pass;
 	private String name;
@@ -108,6 +112,7 @@ public class Person implements UserDetails {
 			return false;
 		return true;
 	}
+	@JsonIgnore
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return roles;
@@ -116,22 +121,27 @@ public class Person implements UserDetails {
 	public String getUsername() {
 		return this.login;
 	}
+	@JsonIgnore
 	@Override
 	public boolean isAccountNonExpired() {
 		return true;
 	}
+	@JsonIgnore
 	@Override
 	public boolean isAccountNonLocked() {
 		return true;
 	}
+	@JsonIgnore
 	@Override
 	public boolean isCredentialsNonExpired() {
 		return true;
 	}
+	@JsonIgnore
 	@Override
 	public boolean isEnabled() {
 		return true;
 	}
+	@JsonIgnore
 	@Override
 	public String getPassword() {
 		return this.pass;
