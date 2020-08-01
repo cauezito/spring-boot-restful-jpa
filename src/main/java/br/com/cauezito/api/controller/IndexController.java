@@ -33,12 +33,12 @@ public class IndexController {
 	//GET
 
 	@GetMapping(value = "/{id}", produces = "application/json")
-	public ResponseEntity<Person> init(@PathVariable(value = "id") Long id) {
+	public ResponseEntity<Person> find(@PathVariable(value = "id") Long id) {
 		Optional<Person> user = personRepository.findById(id);
 
 		return new ResponseEntity<Person>(user.get(), HttpStatus.OK);
 	}
-	
+		
  	@GetMapping(value = "/", produces = "application/json")
 	public ResponseEntity<List<Person>> allUsers() {
 		List<Person> users = (List<Person>) personRepository.findAll();
