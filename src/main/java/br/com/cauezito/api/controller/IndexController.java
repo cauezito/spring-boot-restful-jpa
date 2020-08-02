@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.cauezito.api.model.Person;
+import br.com.cauezito.api.model.PersonDTO;
 import br.com.cauezito.api.repository.PersonRepository;
 
 
@@ -36,10 +37,10 @@ public class IndexController {
 	//GET
 
 	@GetMapping(value = "/{id}", produces = "application/json")
-	public ResponseEntity<Person> find(@PathVariable(value = "id") Long id) {
+	public ResponseEntity<PersonDTO> find(@PathVariable(value = "id") Long id) {
 		Optional<Person> user = personRepository.findById(id);
 
-		return new ResponseEntity<Person>(user.get(), HttpStatus.OK);
+		return new ResponseEntity<PersonDTO>(new PersonDTO(user.get()), HttpStatus.OK);
 	}
 	
 	@CacheEvict(value = "people", allEntries = true)
