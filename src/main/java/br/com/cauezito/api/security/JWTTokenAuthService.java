@@ -1,5 +1,6 @@
 package br.com.cauezito.api.security;
 
+import java.io.IOException;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import br.com.cauezito.api.ApplicationContextLoad;
 import br.com.cauezito.api.model.Person;
 import br.com.cauezito.api.repository.PersonRepository;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -47,47 +49,54 @@ public class JWTTokenAuthService {
 	/* Retorna o usuário validado com TOKEN ou NULL */
 	public Authentication getAuthentication(HttpServletRequest request, HttpServletResponse response) {
 		String token = request.getHeader(HEADER_STRING);
-		if (token != null) {
-			String newToken = token.replace(TOKEN_PREFIX, "").trim();
-			
-			String personToken = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(newToken)
-					.getBody().getSubject();
-			if (personToken != null) {
-				// Todos os recursos (controllers, services, daos, repositories etc) que foram
-				// carregados na memória quando o spring subiu
-				Person person = ApplicationContextLoad.getAppContext().getBean(PersonRepository.class)
-						.findPersonByLogin(personToken);
-				if (person != null) {
-					if(newToken.equalsIgnoreCase(person.getToken())) {
-						return new UsernamePasswordAuthenticationToken(person.getLogin(), 
-								person.getPass(), person.getAuthorities());
+		try {
+
+			if (token != null) {
+				String newToken = token.replace(TOKEN_PREFIX, "").trim();
+
+				String personToken = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(newToken).getBody()
+						.getSubject();
+				if (personToken != null) {
+					// Todos os recursos (controllers, services, daos, repositories etc) que foram
+					// carregados na memória quando o spring subiu
+					Person person = ApplicationContextLoad.getAppContext().getBean(PersonRepository.class)
+							.findPersonByLogin(personToken);
+					if (person != null) {
+						if (newToken.equalsIgnoreCase(person.getToken())) {
+							return new UsernamePasswordAuthenticationToken(person.getLogin(), person.getPass(),
+									person.getAuthorities());
+						}
 					}
 				}
 			}
+		} catch (ExpiredJwtException e) {
+			try {
+				response.getOutputStream().println("O seu TOKEN expirou! Entre novamente para continuar.");
+			} catch (IOException e1) {}
 		}
-		
+
 		allowCors(response);
-		
+
 		return null;
 	}
 
 	private void allowCors(HttpServletResponse response) {
-		if(response.getHeader("Access-Control-Allow-Origin") == null) {
+		if (response.getHeader("Access-Control-Allow-Origin") == null) {
 			response.addHeader("Access-Control-Allow-Origin", "*");
 		}
-		
-		if(response.getHeader("Access-Control-Allow-Headers") == null) {
+
+		if (response.getHeader("Access-Control-Allow-Headers") == null) {
 			response.addHeader("Access-Control-Allow-Headers", "*");
 		}
-		
-		if(response.getHeader("Access-Control-Request-Headers") == null) {
+
+		if (response.getHeader("Access-Control-Request-Headers") == null) {
 			response.addHeader("Access-Control-Request-Headers", "*");
 		}
-		
-		if(response.getHeader("Access-Control-Allow-Methods") == null) {
+
+		if (response.getHeader("Access-Control-Allow-Methods") == null) {
 			response.addHeader("Access-Control-Allow-Methods", "*");
 		}
-		
+
 	}
 
 }
