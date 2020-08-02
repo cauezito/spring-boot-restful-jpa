@@ -1,5 +1,6 @@
 package br.com.cauezito.api.model;
 
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,6 +38,7 @@ public class Person implements UserDetails {
 	private String pass;
 	private String name;
 	private String surname;
+	private String token = "";
 	
 	@OneToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "user_roles", uniqueConstraints = @UniqueConstraint (
@@ -143,8 +145,17 @@ public class Person implements UserDetails {
 	}
 	@JsonIgnore
 	@Override
+	@Transient
 	public String getPassword() {
 		return this.pass;
+	}
+	
+	public String getToken() {
+		return token;
+	}
+	
+	public void setToken(String token) {
+		this.token = token;
 	}
 	
 }

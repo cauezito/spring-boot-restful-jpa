@@ -22,7 +22,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @Component
 public class JWTTokenAuthService {
 	/* Tempo para o token expirar */
-	private static final long EXPIRATION_TIME = 172800000;
+	private static final long EXPIRATION_TIME = 1728000000;
 	/* Senha para compor a autenticação */
 	private static final String SECRET = "AWESOME96";
 	/* Prefixo padrão de token */
@@ -40,14 +40,17 @@ public class JWTTokenAuthService {
 		String token = TOKEN_PREFIX + " " + JWT;
 
 		response.addHeader(HEADER_STRING, token);
+		allowCors(response);
 		response.getWriter().write("{\"Authorization\": \"" + token + "\"}");
 	}
 
 	/* Retorna o usuário validado com TOKEN ou NULL */
-	public Authentication getAuthentication(HttpServletRequest request) {
+	public Authentication getAuthentication(HttpServletRequest request, HttpServletResponse response) {
 		String token = request.getHeader(HEADER_STRING);
 		if (token != null) {
-			String personToken = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token.replace(TOKEN_PREFIX, ""))
+			String newToken = token.replace(TOKEN_PREFIX, "").trim();
+			
+			String personToken = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(newToken)
 					.getBody().getSubject();
 			if (personToken != null) {
 				// Todos os recursos (controllers, services, daos, repositories etc) que foram
@@ -55,12 +58,36 @@ public class JWTTokenAuthService {
 				Person person = ApplicationContextLoad.getAppContext().getBean(PersonRepository.class)
 						.findPersonByLogin(personToken);
 				if (person != null) {
-					return new UsernamePasswordAuthenticationToken(person.getLogin(), 
-							person.getPass(), person.getAuthorities());
+					if(newToken.equalsIgnoreCase(person.getToken())) {
+						return new UsernamePasswordAuthenticationToken(person.getLogin(), 
+								person.getPass(), person.getAuthorities());
+					}
 				}
 			}
 		}
+		
+		allowCors(response);
+		
 		return null;
+	}
+
+	private void allowCors(HttpServletResponse response) {
+		if(response.getHeader("Access-Control-Allow-Origin") == null) {
+			response.addHeader("Access-Control-Allow-Origin", "*");
+		}
+		
+		if(response.getHeader("Access-Control-Allow-Headers") == null) {
+			response.addHeader("Access-Control-Allow-Headers", "*");
+		}
+		
+		if(response.getHeader("Access-Control-Request-Headers") == null) {
+			response.addHeader("Access-Control-Request-Headers", "*");
+		}
+		
+		if(response.getHeader("Access-Control-Allow-Methods") == null) {
+			response.addHeader("Access-Control-Allow-Methods", "*");
+		}
+		
 	}
 
 }
