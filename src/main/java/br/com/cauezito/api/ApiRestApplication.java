@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
@@ -21,21 +22,24 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableTransactionManagement
 @EnableAutoConfiguration
 @EnableCaching
-
+@EnableWebMvc
 public class ApiRestApplication implements WebMvcConfigurer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ApiRestApplication.class, args);
-		//System.out.println(new BCryptPasswordEncoder().encode(""));
+		System.out.println(new BCryptPasswordEncoder().encode("134679ca"));
 	}
 	
 	@Override
-	public void addCorsMappings(CorsRegistry registry) {
-		
+	public void addCorsMappings(CorsRegistry registry) {		
 		registry.addMapping("/user/**")
 		.allowedMethods("*")
-		.allowedOrigins("*");
+		.allowedOrigins("*")	
+		                .allowedHeaders("*")
+		                .allowCredentials(true).maxAge(3600);
+		    }
+		
 		
 	}
 
-}
+

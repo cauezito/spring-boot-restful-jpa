@@ -43,7 +43,14 @@ public class IndexController {
 		return new ResponseEntity<PersonDTO>(new PersonDTO(user.get()), HttpStatus.OK);
 	}
 	
-	@CacheEvict(value = "people", allEntries = true)
+	@GetMapping(value="/find/{name}", produces = "application/json")
+	@CachePut("people")
+	public ResponseEntity<List<Person>> findByName(@PathVariable(value="name") String name){
+		List<Person> list = (List<Person>) personRepository.findPersonByName(name);
+
+		return new ResponseEntity<List<Person>>(list, HttpStatus.OK);
+	}	
+
 	@CachePut(value="people")
  	@GetMapping(value = "/", produces = "application/json")
 	public ResponseEntity<List<Person>> allUsers() {
