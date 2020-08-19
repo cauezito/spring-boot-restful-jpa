@@ -24,7 +24,6 @@ import br.com.cauezito.api.model.Person;
 import br.com.cauezito.api.model.PersonDTO;
 import br.com.cauezito.api.repository.PersonRepository;
 
-
 @CrossOrigin
 @RestController
 @RequestMapping(value = "/user")
@@ -33,21 +32,18 @@ public class IndexController {
 
 	@Autowired
 	private PersonRepository personRepository;
-
 	//GET
 
 	@GetMapping(value = "/{id}", produces = "application/json")
-	public ResponseEntity<PersonDTO> find(@PathVariable(value = "id") Long id) {
-		Optional<Person> user = personRepository.findById(id);
+	public ResponseEntity<Person> find(@PathVariable(value = "id") Long id) {
+		Person user = personRepository.findById(id).get();
 
-		return new ResponseEntity<PersonDTO>(new PersonDTO(user.get()), HttpStatus.OK);
+		return new ResponseEntity<Person>(user, HttpStatus.OK);
 	}
 	
 	@GetMapping(value="/find/{name}", produces = "application/json")
-	@CachePut("people")
 	public ResponseEntity<List<Person>> findByName(@PathVariable(value="name") String name){
-		List<Person> list = (List<Person>) personRepository.findPersonByName(name);
-
+		List<Person> list = (List<Person>) personRepository.findByName(name);
 		return new ResponseEntity<List<Person>>(list, HttpStatus.OK);
 	}	
 
