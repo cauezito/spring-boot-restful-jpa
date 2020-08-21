@@ -1,6 +1,7 @@
 package br.com.cauezito.api.model;
 
 import java.beans.Transient;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -61,8 +62,9 @@ public class Person implements UserDetails {
 			value = ConstraintMode.CONSTRAINT)), 	inverseJoinColumns = @JoinColumn(name="role_id",
 			referencedColumnName = "id", table = "role", unique=false, updatable = false, foreignKey =
 			@javax.persistence.ForeignKey(name="role_fk", 	value = ConstraintMode.CONSTRAINT)))
-	
 	private List<Role> roles;
+
+	private BigDecimal salary;
 	
 	@OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Telephone> phones = new ArrayList<Telephone>();
@@ -189,6 +191,12 @@ public class Person implements UserDetails {
 	}
 	public void setOccupation(Occupation occupation) {
 		this.occupation = occupation;
+	}
+	public BigDecimal getSalary() {
+		return salary;
+	}
+	public void setSalary(BigDecimal salary) {
+		this.salary = salary;
 	}
 	
 }
