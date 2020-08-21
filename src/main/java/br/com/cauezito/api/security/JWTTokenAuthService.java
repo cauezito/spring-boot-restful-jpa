@@ -94,7 +94,7 @@ public class JWTTokenAuthService {
 		}
 
 		if (response.getHeader("Access-Control-Allow-Methods") == null) {
-			response.addHeader("Access-Control-Allow-Methods", "*");
+			response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
 		}
 
 	}

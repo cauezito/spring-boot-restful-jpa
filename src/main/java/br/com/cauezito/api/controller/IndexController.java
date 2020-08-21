@@ -7,6 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,6 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.cauezito.api.model.Person;
 import br.com.cauezito.api.model.PersonDTO;
 import br.com.cauezito.api.repository.PersonRepository;
+import br.com.cauezito.api.repository.TelephoneRepository;
+import br.com.cauezito.api.service.ImplUserDetailsService;
 
 @CrossOrigin
 @RestController
@@ -32,62 +38,106 @@ public class IndexController {
 
 	@Autowired
 	private PersonRepository personRepository;
-	//GET
+
+	@Autowired
+	private TelephoneRepository telephoneRepository;
+
+	@Autowired
+	private ImplUserDetailsService userDetails;
+
+	// GET
 
 	@GetMapping(value = "/{id}", produces = "application/json")
+	@CachePut("cacheuser")
 	public ResponseEntity<Person> find(@PathVariable(value = "id") Long id) {
 		Person user = personRepository.findById(id).get();
 
 		return new ResponseEntity<Person>(user, HttpStatus.OK);
 	}
-	
-	@GetMapping(value="/find/{name}", produces = "application/json")
-	public ResponseEntity<List<Person>> findByName(@PathVariable(value="name") String name){
-		List<Person> list = (List<Person>) personRepository.findByName(name);
-		return new ResponseEntity<List<Person>>(list, HttpStatus.OK);
-	}	
 
-	@CachePut(value="people")
- 	@GetMapping(value = "/", produces = "application/json")
-	public ResponseEntity<List<Person>> allUsers() {
-		List<Person> users = (List<Person>) personRepository.findAll();
-		return new ResponseEntity<List<Person>>(users, HttpStatus.OK);
+	@GetMapping(value = "/find/{name}", produces = "application/json")
+	public ResponseEntity<Page<Person>> findByName(@PathVariable(value = "name") String name) {
+		Page<Person> list = null;		
+		PageRequest pageRequest = PageRequest.of(0, 5, Sort.by("name"));
+		if (name == null || name.equalsIgnoreCase("undefined") || (name != null && name.trim().isEmpty())) {
+			list = personRepository.findAll(pageRequest);
+		} else {
+			list = personRepository.findPersonByNamePage(name, pageRequest);
+		}
+		return new ResponseEntity<Page<Person>>(list, HttpStatus.OK);
 	}
-	
-	//POST
+
+		@GetMapping(value = "/find/{name}/page/{page}", produces = "application/json")
+		public ResponseEntity<Page<Person>> findByNamePage(@PathVariable(value = "name") String name,
+				@PathVariable(value = "page") int page) {
+			Page<Person> list = null;		
+			PageRequest pageRequest = PageRequest.of(page, 5, Sort.by("name"));
+			if (name == null || name.equalsIgnoreCase("undefined") || (name != null && name.trim().isEmpty())) {
+				list = personRepository.findAll(pageRequest);
+			} else {
+				list = personRepository.findPersonByNamePage(name, pageRequest);
+			}
+		
+		
+		return new ResponseEntity<Page<Person>>(list, HttpStatus.OK);
+	}
+
+	@CachePut(value = "people")
+	@GetMapping(value = "/", produces = "application/json")
+	public ResponseEntity<Page<Person>> allUsers() {
+		PageRequest page = PageRequest.of(0, 5, Sort.by("name"));
+		Page<Person> list = personRepository.findAll(page);
+
+		return new ResponseEntity<Page<Person>>(list, HttpStatus.OK);
+	}
+
+	@CachePut(value = "people")
+	@GetMapping(value = "/page/{page}", produces = "application/json")
+	public ResponseEntity<Page<Person>> allUsersPage(@PathVariable("page") int pageParam) {
+		PageRequest page = PageRequest.of(pageParam, 5, Sort.by("name"));
+		Page<Person> list = personRepository.findAll(page);
+
+		return new ResponseEntity<Page<Person>>(list, HttpStatus.OK);
+	}
+
+	// POST
 
 	@PostMapping(value = "/", produces = "application/json")
 	public ResponseEntity<Person> register(@RequestBody Person person) {
 		person.getPhones().forEach(t -> t.setPerson(person));
 		String password = new BCryptPasswordEncoder().encode(person.getPass());
 		person.setPass(password);
-		person.getPhones().forEach(t -> t.setPerson(person));
-		Person userAux = personRepository.save(person);	
-		return new ResponseEntity<Person>(userAux, HttpStatus.OK);
-	}
-
-	//PUT
-
-	@PutMapping(value = "/{id}", produces = "application/json")
-	public ResponseEntity<Person> update(@RequestBody Person person, @PathVariable(value = "id") Long id) {
-		person.setId(id);
-		person.getPhones().forEach(t -> t.setPerson(person));
-		Person aux = personRepository.findPersonByLogin(person.getLogin());
-		
-		if(!aux.getPass().equals(person.getPass())) {
-			String password = new BCryptPasswordEncoder().encode(person.getPass());
-			person.setPass(password);
-		}
-		
 		Person userAux = personRepository.save(person);
 		return new ResponseEntity<Person>(userAux, HttpStatus.OK);
 	}
-	
-	//DELETE
+
+	// PUT
+
+	@PutMapping(value = "/", produces = "application/json")
+	public ResponseEntity<Person> update(@RequestBody Person person) {
+		person.getPhones().forEach(t -> t.setPerson(person));
+		Person aux = personRepository.findById(person.getId()).get();
+
+		if (!aux.getPass().equals(person.getPass())) {
+			String password = new BCryptPasswordEncoder().encode(person.getPass());
+			person.setPass(password);
+		}
+
+		Person userAux = personRepository.save(person);
+		return new ResponseEntity<Person>(userAux, HttpStatus.OK);
+	}
+
+	// DELETE
 
 	@DeleteMapping(value = "/{id}", produces = "application/text")
 	public String delete(@PathVariable(value = "id") Long id) {
 		personRepository.deleteById(id);
+		return "ok";
+	}
+
+	@DeleteMapping(value = "/deleteTelephone/{id}", produces = "application/text")
+	public String deleteTelephone(@PathVariable("id") Long id) {
+		telephoneRepository.deleteById(id);
 		return "ok";
 	}
 }

@@ -3,6 +3,7 @@ package br.com.cauezito.api.model;
 import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -16,13 +17,19 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.ForeignKey;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
@@ -40,8 +47,13 @@ public class Person implements UserDetails {
 	private String surname;
 	private String token = "";
 	
-	@OneToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "user_roles", uniqueConstraints = @UniqueConstraint (
+	@JsonFormat(pattern= "dd/MM/yyyy")
+	@Temporal(TemporalType.DATE)
+	@DateTimeFormat(iso = ISO.DATE, pattern= "dd/MM/yyyy")
+	private Date birth;
+	
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "person_roles", uniqueConstraints = @UniqueConstraint (
 			columnNames = {"person_id", "role_id"}, name = "unique_role"
 			), joinColumns = @JoinColumn(name = "person_id", referencedColumnName = "id", 
 			table = "person", unique = false,  foreignKey = @javax.persistence.ForeignKey(name="person_fk", 
@@ -85,6 +97,12 @@ public class Person implements UserDetails {
 	public void setSurname(String surname) {
 		this.surname = surname;
 	}
+	public Date getBirth() {
+		return birth;
+	}
+	public void setBirth(Date birth) {
+		this.birth = birth;
+	}
 	public List<Telephone> getPhones() {
 		return phones;
 	}
@@ -116,7 +134,7 @@ public class Person implements UserDetails {
 	}
 	@JsonIgnore
 	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
+	public Collection<Role> getAuthorities() {
 		return roles;
 	}
 	@Override
