@@ -18,6 +18,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinColumns;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -66,6 +67,8 @@ public class Person implements UserDetails {
 	@OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Telephone> phones = new ArrayList<Telephone>();
 	
+	@ManyToOne
+	private Occupation occupation;
 	
 	public Long getId() {
 		return id;
@@ -174,6 +177,18 @@ public class Person implements UserDetails {
 	
 	public void setToken(String token) {
 		this.token = token;
+	}
+	public List<Role> getRoles() {
+		return roles;
+	}
+	public void setRoles(List<Role> roles) {
+		this.roles = roles;
+	}
+	public Occupation getOccupation() {
+		return occupation;
+	}
+	public void setOccupation(Occupation occupation) {
+		this.occupation = occupation;
 	}
 	
 }
