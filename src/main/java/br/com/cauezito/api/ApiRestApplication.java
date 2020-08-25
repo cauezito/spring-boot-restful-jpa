@@ -43,6 +43,12 @@ public class ApiRestApplication implements WebMvcConfigurer {
 		.allowedOrigins("*")	
 		                .allowedHeaders("*")
 		                .allowCredentials(true).maxAge(3600);
+		
+		registry.addMapping("/recovery/**")
+		.allowedMethods("*")
+		.allowedOrigins("*")	
+		                .allowedHeaders("*")
+		                .allowCredentials(true).maxAge(3600);
 		    }
 		
 		
