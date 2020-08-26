@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class SendEmailService {
 	
 	private String email = "developer.test9627@gmail.com";
-	private String password = "";	
+	private String password = "awesome1001!";	
 
 	public void send(String subject, String to, String msg) {		
 		

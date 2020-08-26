@@ -26,9 +26,10 @@ public class ReportService implements Serializable {
 	private JdbcTemplate jdbc;
 	
 	public byte[] buildReport (String name, ServletContext servlet) {
+		Connection connection = null;
 		try {
-			Connection connection = jdbc.getDataSource().getConnection();
-			String jasperPath = servlet.getRealPath("br.com.cauezito.api.report") + 
+			connection = jdbc.getDataSource().getConnection();
+			String jasperPath = servlet.getRealPath("reports") + 
 					File.separator + "users" + ".jasper";
 			
 			JasperPrint print = JasperFillManager.fillReport(jasperPath, new HashMap(), connection);
@@ -38,6 +39,12 @@ public class ReportService implements Serializable {
 		} catch (SQLException | JRException e) {
 			e.printStackTrace();
 			return null;
+		} finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
 	

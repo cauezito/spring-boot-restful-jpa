@@ -3,6 +3,9 @@ package br.com.cauezito.api.controller;
 import java.util.List;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -29,6 +32,7 @@ import br.com.cauezito.api.model.PersonDTO;
 import br.com.cauezito.api.repository.PersonRepository;
 import br.com.cauezito.api.repository.TelephoneRepository;
 import br.com.cauezito.api.service.ImplUserDetailsService;
+import br.com.cauezito.api.service.ReportService;
 
 @CrossOrigin
 @RestController
@@ -44,6 +48,9 @@ public class IndexController {
 
 	@Autowired
 	private ImplUserDetailsService userDetails;
+	
+	@Autowired
+	private ReportService reportService;
 
 	// GET
 
@@ -81,6 +88,16 @@ public class IndexController {
 		
 		return new ResponseEntity<Page<Person>>(list, HttpStatus.OK);
 	}
+		
+		@GetMapping(value = "/report", produces = "application/text")
+		public ResponseEntity<String> downloadReport(HttpServletRequest req){
+			byte[] pdf = reportService.buildReport("users", req.getServletContext());
+			
+			String base64Pdf = "data:application/pdf;base64," + Base64.encodeBase64String(pdf);
+			
+			return new ResponseEntity<String>(base64Pdf, HttpStatus.OK);
+			
+		}
 
 	@CachePut(value = "people")
 	@GetMapping(value = "/", produces = "application/json")
