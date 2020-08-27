@@ -94,7 +94,7 @@ public class IndexController {
 			byte[] pdf = reportService.buildReport("users", req.getServletContext());
 			
 			String base64Pdf = "data:application/pdf;base64," + Base64.encodeBase64String(pdf);
-			
+
 			return new ResponseEntity<String>(base64Pdf, HttpStatus.OK);
 			
 		}
