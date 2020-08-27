@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.cauezito.api.model.Person;
 import br.com.cauezito.api.model.PersonDTO;
+import br.com.cauezito.api.model.UserReport;
 import br.com.cauezito.api.repository.PersonRepository;
 import br.com.cauezito.api.repository.TelephoneRepository;
 import br.com.cauezito.api.service.ImplUserDetailsService;
@@ -126,6 +127,15 @@ public class IndexController {
 		person.setPass(password);
 		Person userAux = personRepository.save(person);
 		return new ResponseEntity<Person>(userAux, HttpStatus.OK);
+	}
+	
+	@PostMapping(value = "/report/", produces = "application/text")
+	public ResponseEntity<String> downloadReportParam(HttpServletRequest req, @RequestBody UserReport userReport){
+		byte[] pdf = reportService.buildReport("users", req.getServletContext());
+		String base64Pdf = "data:application/pdf;base64," + Base64.encodeBase64String(pdf);
+
+		return new ResponseEntity<String>(base64Pdf, HttpStatus.OK);
+		
 	}
 
 	// PUT
