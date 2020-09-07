@@ -12,11 +12,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import br.com.cauezito.api.model.Person;
 
 @Repository
+@Component
 public interface PersonRepository extends JpaRepository<Person, Long> {
 	
 	@Query("select p from Person p where p.login = ?1")
@@ -34,7 +36,6 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 	default Page<Person> findPersonByNamePage(String name, PageRequest pageRequest){
 		Person person = new Person();
 		person.setName(name);
-		
 		ExampleMatcher em = ExampleMatcher.matchingAny()
 				.withMatcher("name", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
 		Example<Person> example = Example.of(person, em);

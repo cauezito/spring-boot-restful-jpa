@@ -1,6 +1,10 @@
 package br.com.cauezito.api.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +53,7 @@ public class IndexController {
 
 	@Autowired
 	private ImplUserDetailsService userDetails;
-	
+
 	@Autowired
 	private ReportService reportService;
 
@@ -65,7 +69,7 @@ public class IndexController {
 
 	@GetMapping(value = "/find/{name}", produces = "application/json")
 	public ResponseEntity<Page<Person>> findByName(@PathVariable(value = "name") String name) {
-		Page<Person> list = null;		
+		Page<Person> list = null;
 		PageRequest pageRequest = PageRequest.of(0, 5, Sort.by("name"));
 		if (name == null || name.equalsIgnoreCase("undefined") || (name != null && name.trim().isEmpty())) {
 			list = personRepository.findAll(pageRequest);
@@ -75,30 +79,29 @@ public class IndexController {
 		return new ResponseEntity<Page<Person>>(list, HttpStatus.OK);
 	}
 
-		@GetMapping(value = "/find/{name}/page/{page}", produces = "application/json")
-		public ResponseEntity<Page<Person>> findByNamePage(@PathVariable(value = "name") String name,
-				@PathVariable(value = "page") int page) {
-			Page<Person> list = null;		
-			PageRequest pageRequest = PageRequest.of(page, 5, Sort.by("name"));
-			if (name == null || name.equalsIgnoreCase("undefined") || (name != null && name.trim().isEmpty())) {
-				list = personRepository.findAll(pageRequest);
-			} else {
-				list = personRepository.findPersonByNamePage(name, pageRequest);
-			}
-		
-		
+	@GetMapping(value = "/find/{name}/page/{page}", produces = "application/json")
+	public ResponseEntity<Page<Person>> findByNamePage(@PathVariable(value = "name") String name,
+			@PathVariable(value = "page") int page) {
+		Page<Person> list = null;
+		PageRequest pageRequest = PageRequest.of(page, 5, Sort.by("name"));
+		if (name == null || name.equalsIgnoreCase("undefined") || (name != null && name.trim().isEmpty())) {
+			list = personRepository.findAll(pageRequest);
+		} else {
+			list = personRepository.findPersonByNamePage(name, pageRequest);
+		}
+
 		return new ResponseEntity<Page<Person>>(list, HttpStatus.OK);
 	}
-		
-		@GetMapping(value = "/report", produces = "application/text")
-		public ResponseEntity<String> downloadReport(HttpServletRequest req){
-			byte[] pdf = reportService.buildReport("users", req.getServletContext());
-			
-			String base64Pdf = "data:application/pdf;base64," + Base64.encodeBase64String(pdf);
 
-			return new ResponseEntity<String>(base64Pdf, HttpStatus.OK);
-			
-		}
+	@GetMapping(value = "/report", produces = "application/text")
+	public ResponseEntity<String> downloadReport(HttpServletRequest req) {
+		byte[] pdf = reportService.buildReport("users", req.getServletContext(), new HashMap());
+
+		String base64Pdf = "data:application/pdf;base64," + Base64.encodeBase64String(pdf);
+
+		return new ResponseEntity<String>(base64Pdf, HttpStatus.OK);
+
+	}
 
 	@CachePut(value = "people")
 	@GetMapping(value = "/", produces = "application/json")
@@ -128,14 +131,27 @@ public class IndexController {
 		Person userAux = personRepository.save(person);
 		return new ResponseEntity<Person>(userAux, HttpStatus.OK);
 	}
-	
+
 	@PostMapping(value = "/report/", produces = "application/text")
-	public ResponseEntity<String> downloadReportParam(HttpServletRequest req, @RequestBody UserReport userReport){
-		byte[] pdf = reportService.buildReport("users", req.getServletContext());
+	public ResponseEntity<String> downloadReportParam(HttpServletRequest req, @RequestBody UserReport userReport) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		SimpleDateFormat dateFormatParam = new SimpleDateFormat("yyyy-MM-dd");
+		Map<String,Object> params = new HashMap<String, Object>();
+		String startDate = null;
+		String endDate = null;
+		
+		try {
+			startDate = dateFormatParam.format(dateFormat.parse(userReport.getStartDate()));
+			endDate = dateFormatParam.format(dateFormat.parse(userReport.getEndDate()));
+			params.put("START_DATE", startDate);
+			params.put("END_DATE", endDate);
+		} catch (ParseException e) {
+		}		
+		
+		byte[] pdf = reportService.buildReport("users-param", req.getServletContext(), params);
 		String base64Pdf = "data:application/pdf;base64," + Base64.encodeBase64String(pdf);
 
 		return new ResponseEntity<String>(base64Pdf, HttpStatus.OK);
-		
 	}
 
 	// PUT
@@ -166,5 +182,10 @@ public class IndexController {
 	public String deleteTelephone(@PathVariable("id") Long id) {
 		telephoneRepository.deleteById(id);
 		return "ok";
+	}
+	
+	// OTHER
+	public String test(String login) {
+		return login;
 	}
 }

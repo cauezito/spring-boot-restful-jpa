@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 
@@ -25,14 +26,14 @@ public class ReportService implements Serializable {
 	@Autowired
 	private JdbcTemplate jdbc;
 	
-	public byte[] buildReport (String name, ServletContext servlet) {
+	public byte[] buildReport (String name, ServletContext servlet, Map<String, Object> params) {
 		Connection connection = null;
 		try {
 			connection = jdbc.getDataSource().getConnection();
 			String jasperPath = servlet.getRealPath("reports") + 
-					File.separator + "users" + ".jasper";
+					File.separator + name + ".jasper";
 			
-			JasperPrint print = JasperFillManager.fillReport(jasperPath, new HashMap(), connection);
+			JasperPrint print = JasperFillManager.fillReport(jasperPath, params, connection);
 		
 			return JasperExportManager.exportReportToPdf(print);
 			

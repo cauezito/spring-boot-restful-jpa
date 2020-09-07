@@ -6,7 +6,8 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,6 @@ import br.com.cauezito.api.ApplicationContextLoad;
 import br.com.cauezito.api.model.Person;
 import br.com.cauezito.api.repository.PersonRepository;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -32,26 +32,47 @@ public class JWTTokenAuthService {
 
 	private static final String HEADER_STRING = "Authorization";
 
+
 	/* Gerando token de autenticação e adicionando ao cabeçalho de resposta HTTP */
 	public void addAuthentication(HttpServletResponse response, String login) throws Exception {
-		/* Montagem do token */
-		String JWT = Jwts.builder().setSubject(login)
-				.setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-				.signWith(SignatureAlgorithm.HS512, SECRET).compact();
+		Person person = ApplicationContextLoad.getAppContext().getBean(PersonRepository.class)
+				.findPersonByLogin(login);		
+		
+		// Se o usuário for encontrado
+		if (person != null) {
+			String token;
+			if(person.getToken() != null && !person.getToken().isEmpty()){
+				token = person.getToken();
+				response.addHeader(HEADER_STRING, token);
+				response.getWriter().write("{\"Authorization\": \"" + token + "\"}");
+			} else {
+				/* Montagem do token */
+				String JWT = Jwts.builder().setSubject(login)
+						.setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+						.signWith(SignatureAlgorithm.HS512, SECRET).compact();
 
-		String token = TOKEN_PREFIX + " " + JWT;
+				token = TOKEN_PREFIX + " " + JWT;
 
-		response.addHeader(HEADER_STRING, token);
+				response.addHeader(HEADER_STRING, token);
+				response.getWriter().write("{\"Authorization\": \"" + token + "\"}");
+				person.setToken(token);
+				ApplicationContextLoad.getAppContext().getBean(PersonRepository.class).save(person);
+						
+			}
+		}
+
 		allowCors(response);
-		response.getWriter().write("{\"Authorization\": \"" + token + "\"}");
+
 	}
 
 	/* Retorna o usuário validado com TOKEN ou NULL */
 	public Authentication getAuthentication(HttpServletRequest request, HttpServletResponse response) {
-		String token = request.getHeader(HEADER_STRING);
+		allowCors(response);
+		String token = request.getHeader("Authorization");
+		
 		try {
 
-			if (token != null) {
+			if (token != null) { // se existir um token
 				String newToken = token.replace(TOKEN_PREFIX, "").trim();
 
 				String personToken = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(newToken).getBody()
@@ -62,7 +83,8 @@ public class JWTTokenAuthService {
 					Person person = ApplicationContextLoad.getAppContext().getBean(PersonRepository.class)
 							.findPersonByLogin(personToken);
 					if (person != null) {
-						if (newToken.equalsIgnoreCase(person.getToken())) {
+						// Se o token salvo no usuário for o mesmo recuperado pelo localstorage
+						if (newToken.equalsIgnoreCase(person.getToken().replace(TOKEN_PREFIX, "").trim())) {
 							return new UsernamePasswordAuthenticationToken(person.getLogin(), person.getPass(),
 									person.getAuthorities());
 						}
@@ -72,10 +94,9 @@ public class JWTTokenAuthService {
 		} catch (ExpiredJwtException e) {
 			try {
 				response.getOutputStream().println("O seu TOKEN expirou! Entre novamente para continuar.");
-			} catch (IOException e1) {}
+			} catch (IOException e1) {
+			}
 		}
-
-		allowCors(response);
 
 		return null;
 	}

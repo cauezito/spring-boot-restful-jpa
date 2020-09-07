@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.hibernate.exception.ConstraintViolationException;
-import org.postgresql.util.PSQLException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -46,7 +45,7 @@ public class ExceptionControl extends ResponseEntityExceptionHandler{
 		}
 		
 		@ExceptionHandler({DataIntegrityViolationException.class, ConstraintViolationException.class, 
-			PSQLException.class, SQLException.class})
+			SQLException.class})
 		/*Intercepta erros a nível de banco de dados*/
 		protected ResponseEntity<Object> handleExceptionDataIntegrity(Exception ex){
 			String message = "";
@@ -55,9 +54,6 @@ public class ExceptionControl extends ResponseEntityExceptionHandler{
 				 message = ((DataIntegrityViolationException) ex).getCause().getCause().getMessage();
 			} else if (ex instanceof ConstraintViolationException) {
 				 message = ((ConstraintViolationException) ex).getCause().getCause().getMessage();
-			}
-			 else if (ex instanceof PSQLException) {
-				 message = ((PSQLException) ex).getCause().getCause().getMessage();
 			}
 			 else if (ex instanceof SQLException) {
 				 message = ((SQLException) ex).getCause().getCause().getMessage();
