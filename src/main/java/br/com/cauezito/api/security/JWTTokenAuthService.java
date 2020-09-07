@@ -43,22 +43,18 @@ public class JWTTokenAuthService {
 			String token;
 			if(person.getToken() != null && !person.getToken().isEmpty()){
 				token = person.getToken();
-				response.addHeader(HEADER_STRING, token);
-				response.getWriter().write("{\"Authorization\": \"" + token + "\"}");
 			} else {
 				/* Montagem do token */
 				String JWT = Jwts.builder().setSubject(login)
 						.setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
 						.signWith(SignatureAlgorithm.HS512, SECRET).compact();
 
-				token = TOKEN_PREFIX + " " + JWT;
-
-				response.addHeader(HEADER_STRING, token);
-				response.getWriter().write("{\"Authorization\": \"" + token + "\"}");
+				token = TOKEN_PREFIX + " " + JWT;			
 				person.setToken(token);
-				ApplicationContextLoad.getAppContext().getBean(PersonRepository.class).save(person);
-						
-			}
+				ApplicationContextLoad.getAppContext().getBean(PersonRepository.class).save(person);						
+			}			
+			response.addHeader(HEADER_STRING, token);
+			response.getWriter().write("{\"Authorization\": \"" + token + "\"}");			
 		}
 
 		allowCors(response);
